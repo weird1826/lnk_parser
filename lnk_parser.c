@@ -33,14 +33,22 @@
 #include <stdio.h>
 #include <stdint.h> // To use unsigned int 32 bit
 
+/**
+ * According to Microsoft Spec, LNK header looks like:
+ * 1. Header Size (4 bytes)
+ * 2. LinkCLSID (16 bytes) - Unique GUID, usually specific to the version of windows
+ * 3. Link Flags (4 bytes) - Tells if the target is on a network drive, a local drive, etc.
+ */
 struct LnkHeader {
     uint32_t HeaderSize;
+    uint8_t LinkCLSID[16];
+    uint32_t LinkFlags;
 } LnkHeader;
 
 int main(int argc, char *argv[]){
     FILE* fptr;
 
-    fptr = fopen("./test.txt", "rb");
+    fptr = fopen("./test_folder.lnk", "rb");
     if(fptr == NULL) {
         printf("[ERROR] Program is experiencing difficulties opening the file. Try again later.\n");
         return 1;
@@ -54,7 +62,11 @@ int main(int argc, char *argv[]){
      */
     fread(&LnkHeader, sizeof(LnkHeader), 1, fptr);
 
-    printf("Value of Header Size: %d", LnkHeader.HeaderSize);
+    printf("Value of Header Size: %d\n", LnkHeader.HeaderSize);
+    printf("GUID: ");
+    for(int i = 0; i < 16; i++) printf("%02X ", LnkHeader.LinkCLSID);
+    printf("\n");
+    printf("Value of Header LinkFlags: %x\n", LnkHeader.LinkFlags);
     
     fclose(fptr);
     return 0;
